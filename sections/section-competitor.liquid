@@ -1,0 +1,475 @@
+{{ 'section-rich-text.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  .competitor-page-width{
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+<style>
+  .table-container table {
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.78);
+    margin: 0 auto;
+  }
+  h2.section-competitor__heading {
+    margin-bottom: 16px;
+  }
+  .section-competitor__richtext {
+    padding-bottom: 20px;
+  }
+  thead td {
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px; /* 160% */
+  }
+  td:nth-child(4),
+  th:nth-child(4) {
+    display: none;
+  }
+  @media (min-width: 750px) {
+    .section-competitor__richtext p {
+      padding-bottom: 60px;
+      max-width: 670px;
+      margin: 0 auto;
+    }
+    thead td {
+      font-size: 15px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 24px; /* 160% */
+    }
+    td:nth-child(4),
+    th:nth-child(4) {
+      display: table-cell;
+    }
+  }
+  td {
+    border: none; /* Removes border around each cell */
+  }
+
+  .blue {
+    background-color: #0f62fe;
+    color: white;
+    border: none; /* Removes border from blue cells */
+    z-index: 2;
+    position: relative;
+  }
+  tr:nth-of-type(2n) td.blue {
+    background: rgba(15, 99, 254, 0.827);
+  }
+
+  .top-round {
+    border-top-left-radius: 10px; /* top left corner */
+    border-top-right-radius: 10px; /* top right corner */
+  }
+
+  .bottom-round {
+    border-bottom-left-radius: 10px; /* bottom left corner */
+    border-bottom-right-radius: 10px; /* top right corner */
+  }
+  .bg-none {
+    background-color: red;
+  }
+  table {
+    border-collapse: collapse;
+    width: min(95%, 1020px);
+  }
+
+  table:not([class]) {
+    box-shadow: none;
+  }
+  table:not([class]) td,
+  table:not([class]) th {
+    border: none;
+  }
+  table td:first-child,
+  table th:first-child {
+    width: 40%;
+    text-align: left;
+  }
+  table td:nth-child(2),
+  table th:nth-child(2) {
+    width: 20%;
+  }
+  table td:nth-child(3),
+  table th:nth-child(3),
+  table td:nth-child(4),
+  table th:nth-child(4) {
+    width: 15%;
+  }
+  tr {
+    border-bottom: 1px solid #cbcbcb;
+  }
+
+  tbody tr:nth-last-child(2),
+  thead tr {
+    border-bottom: none;
+  }
+  tbody tr:first-child {
+    border-top: none;
+  }
+</style>
+
+<div class="isolate{% unless section.settings.full_width %} page-width{% endunless %}">
+  <div class="rich-text content-container color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width content-container--full-width{% endif %} section-{{ section.id }}-padding">
+    <div class="rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} competitor-page-width{% endif %}">
+      <div class=" {{ section.settings.content_alignment }}">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'heading' -%}
+              <h2
+                class="section-competitor__heading rich-text__heading rte inline-richtext {{ block.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {{ block.shopify_attributes }}
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {{ block.settings.heading }}
+              </h2>
+
+            {%- when 'text' -%}
+              <div
+                class="section-competitor__richtext rich-text__text rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {{ block.shopify_attributes }}
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {{ block.settings.text }}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+        <div
+          class="table-container {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          <table>
+            <thead class="color-{{ section.settings.color_scheme }}">
+              <tr>
+                <td>{{ section.settings.heading_1 }}</td>
+                <td class="blue top-round" style="background: rgba(15, 99, 254, 0.827)">
+                  {{ section.settings.heading_2 }}
+                </td>
+                <td>
+                  {{ section.settings.heading_3 }}
+                </td>
+                <td>
+                  {{ section.settings.heading_4 }}
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for block in section.blocks %}
+                {% if block.type == 'table_row' %}
+                  <tr>
+                    <td>{{ block.settings.column_1 }}</td>
+                    <td class="blue">
+                      {% case block.settings.column_2 -%}
+                        {%- when 'check' -%}
+                          {%- render 'icon-comp-check' -%}
+                        {%- when 'cross' -%}
+                          {%- render 'icon-comp-cross' -%}
+                        {%- when 'text' -%}
+                          {{- block.settings.column_2_text -}}
+                      {%- endcase %}
+                    </td>
+                    <td>
+                      {% case block.settings.column_3 -%}
+                        {%- when 'check' -%}
+                          {%- render 'icon-comp-check' -%}
+                        {%- when 'cross' -%}
+                          {%- render 'icon-comp-cross' -%}
+                        {%- when 'text' -%}
+                          {{- block.settings.column_3_text -}}
+                      {%- endcase %}
+                    </td>
+                    <td>
+                      {% case block.settings.column_4 -%}
+                        {%- when 'check' -%}
+                          {%- render 'icon-comp-check' -%}
+                        {%- when 'cross' -%}
+                          {%- render 'icon-comp-cross' -%}
+                        {%- when 'text' -%}
+                          {{- block.settings.column_4_text -}}
+                      {%- endcase %}
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+              <tr class="color-{{ section.settings.color_scheme }} last">
+                <td></td>
+                <td class="blue bottom-round"></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Comparison",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.desktop_content_position.label",
+      "info": "t:sections.rich-text.settings.desktop_content_position.info"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "background-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": true,
+      "label": "t:sections.rich-text.settings.full_width.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    },
+    {
+      "type": "text",
+      "id": "heading_1",
+      "label": "Heading for Column 1"
+    },
+    {
+      "type": "text",
+      "id": "heading_2",
+      "label": "Heading for Column 2"
+    },
+    {
+      "type": "text",
+      "id": "heading_3",
+      "label": "Heading for Column 3",
+      "default": "PODS"
+    },
+    {
+      "type": "text",
+      "id": "heading_4",
+      "label": "Heading for Column 4",
+      "default": "INSTANT"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "t:sections.rich-text.blocks.heading.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "default": "Talk about your brand",
+          "label": "t:sections.rich-text.blocks.heading.settings.heading.label"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "options": [
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_size.options__2.label"
+            },
+            {
+              "value": "h0",
+              "label": "t:sections.all.heading_size.options__3.label"
+            },
+            {
+              "value": "hxl",
+              "label": "t:sections.all.heading_size.options__4.label"
+            }
+          ],
+          "default": "h1",
+          "label": "t:sections.all.heading_size.label"
+        }
+      ]
+    },
+
+    {
+      "type": "text",
+      "name": "t:sections.rich-text.blocks.text.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "default": "<p>Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.</p>",
+          "label": "t:sections.rich-text.blocks.text.settings.text.label"
+        }
+      ]
+    },
+    {
+      "type": "table_row",
+      "name": "Table row",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "text",
+          "id": "column_1",
+          "label": "Column 1 text",
+          "default": "Fast, Easy, and Convenient"
+        },
+        {
+          "type": "select",
+          "id": "column_2",
+          "label": "Column 2 select",
+          "options": [
+            { "value": "check", "label": "Check" },
+            { "value": "cross", "label": "Cross" },
+            { "value": "text", "label": "Text" }
+          ],
+          "default": "check"
+        },
+        {
+          "type": "text",
+          "id": "column_2_text",
+          "label": "Column 2 text",
+          "default": "Default text"
+        },
+        {
+          "type": "select",
+          "id": "column_3",
+          "label": "Column 3 select",
+          "options": [
+            { "value": "check", "label": "Check" },
+            { "value": "cross", "label": "Cross" },
+            { "value": "text", "label": "Text" }
+          ],
+          "default": "cross"
+        },
+        {
+          "type": "text",
+          "id": "column_3_text",
+          "label": "Column 3 text",
+          "default": "Default text"
+        },
+        {
+          "type": "select",
+          "id": "column_4",
+          "label": "Column 4 select",
+          "options": [
+            { "value": "check", "label": "Check" },
+            { "value": "cross", "label": "Cross" },
+            { "value": "text", "label": "Text" }
+          ],
+          "default": "cross"
+        },
+        {
+          "type": "text",
+          "id": "column_4_text",
+          "label": "Column 4 text",
+          "default": "Default text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comparison",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "table_row"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,619 @@
+{{ 'section-multicolumn.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+<style>
+  .testimonial-block {
+    width: 100%;
+  }
+  .testimonial-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+  .testimonial-grid-3 li {
+    border-bottom: 1px solid #c3c3c3;
+    margin-bottom: 30px;
+  }
+  .testimonial-grid-3 li:last-child {
+    border-bottom: 0;
+    margin-bottom: 40px;
+  }
+
+  .user-block {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    width: 100%;
+  }
+  .user-wrapper {
+    display: flex;
+    font-size: 18px;
+    gap: 10px;
+  }
+  .user-wrapper p.verified {
+    color: #3cb36c;
+  }
+  .testimonial-image {
+    margin-right: 5px;
+  }
+  .testimonial-image img {
+    height: 76px;
+    width: 76px;
+  }
+  .testimonial-multicolumn-card {
+    width: 100%;
+  }
+  .comment-block {
+    width: 100%;
+  }
+  .likes-block {
+    display: none;
+  }
+  .likes-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .likes-wrapper p {
+    margin-right: 20px;
+  }
+  .grid-images {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(1fr, 220px));
+    grid-gap: 10px;
+  }
+  @media (min-width: 750px) {
+    .likes-block {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .testimonial-image {
+      margin-right: 30px;
+    }
+  }
+  .grid-item img {
+    max-width: 220px;
+    height: auto;
+  }
+  /*-------- Tabs ------------*/
+  .mytabs {
+    display: flex;
+    flex-wrap: wrap;
+    // margin: 50px auto;
+    padding: 0 25px;
+  }
+  .mytabs input[type='radio'] {
+    display: none;
+  }
+  .mytabs label {
+    display: none;
+    padding-bottom: 16px;
+    margin-right: 55px;
+    /* background: #e2e2e2; */
+    font-weight: bold;
+    border-bottom: 5px solid #fff;
+  }
+  .comment-block-text {
+    padding-bottom: 30px;
+  }
+  .testimonial-grid-3 li:last-child .comment-block-text {
+    padding-bottom: 0;
+  }
+
+  .select-wrapper select {
+    display: none;
+  }
+  @media (min-width: 750px) {
+    .select-wrapper select {
+      display: block;
+      border: 1px solid #c3c3c3;
+      outline: none; /* Removes the focus outline, but you can keep it if you want */
+      background-color: white;
+      padding: 5px 15px; /* Add some padding for better appearance */
+      font-size: 16px; /* Set a default font size */
+    }
+    .mytabs label {
+      display: block;
+    }
+    .select-wrapper select {
+      display: flex;
+    }
+    .comment-block-text {
+      padding: 30px 0;
+    }
+  }
+
+  .mytabs .tab {
+    width: 100%;
+    /* padding: 20px; */
+    background: #fff;
+    order: 1;
+    display: none;
+    border-top: 1px solid #c3c3c3;
+    // padding-top: 100px;
+  }
+  .mytabs .tab h2 {
+    font-size: 3em;
+  }
+
+  .mytabs input[type='radio']:checked + label + .tab {
+    display: block;
+  }
+
+  .mytabs input[type='radio']:checked + label {
+    background: #fff;
+    border-bottom: 5px solid black;
+  }
+  .select-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 40px;
+  }
+  .user-rating-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'rating date'
+      'name verified';
+    gap: 10px;
+    width: 100%;
+  }
+  .user-rating-wrapper .user {
+    grid-area: name;
+  }
+
+  .user-rating-wrapper .star-rating {
+    grid-area: rating;
+  }
+
+  .user-rating-wrapper .verified {
+    grid-area: verified;
+  }
+
+  .user-rating-wrapper .date-wrapper {
+    grid-area: date;
+  }
+  .mobile {
+    display: none;
+  }
+  .desktop {
+    display: block;
+  }
+  @media (min-width: 750px) {
+    .user-rating-wrapper {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        'name verified'
+        'rating rating';
+
+      gap: 10px;
+    }
+    .mobile {
+      display: block;
+    }
+    .desktop {
+      display: none;
+    }
+    .user-rating-wrapper {
+      flex-direction: column;
+    }
+  }
+</style>
+<script>
+  document.getElementById('sort-testimonials').addEventListener('change', function () {
+    const method = this.value;
+    const testimonialsContainer = document.querySelector('.testimonial-grid-3');
+    let testimonials = Array.from(testimonialsContainer.children);
+
+    testimonials = testimonials.sort((a, b) => {
+      const dateA = new Date(a.querySelector('.date-wrapper').textContent.trim());
+      const dateB = new Date(b.querySelector('.date-wrapper').textContent.trim());
+      return method === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+
+    testimonials.forEach((testimonial) => testimonialsContainer.appendChild(testimonial));
+  });
+</script>
+
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+-%}
+<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
+  <div
+    class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    {% if settings.animations_reveal_on_scroll %}
+      data-cascade
+    {% endif %}
+  >
+    <div class="{{ section.settings.content_alignment }}">
+      <h2
+        class="section-benefits__heading rich-text__heading rte inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        {{ block.shopify_attributes }}
+        {% if settings.animations_reveal_on_scroll %}
+          data-cascade
+          style="--animation-order: {{ forloop.index }};"
+        {% endif %}
+      >
+        {{ section.settings.heading }}
+      </h2>
+    </div>
+    <slider-component class="slider-mobile-gutter">
+      <!-- Tabs Starts here -->
+      <div class="mytabs">
+        <input type="radio" id="tabfree" name="mytabs" checked="checked">
+        <label for="tabfree">Reviews</label>
+
+        <div class="tab">
+          <!-- Sort -->
+          <div class="select-wrapper">
+            <select id="sort-comments">
+              <option value="newest">Recent</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </div>
+
+          <ul class="testimonial-grid-3" id="Slider-{{ section.id }}" role="list">
+            {%- assign sorted_blocks = section.blocks | sort: 'settings.date' | reverse %}
+
+            {%- for block in sorted_blocks -%}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="block-{{ forloop.index }}"
+                {{ block.shopify_attributes }}
+              >
+                <div class="testimonial-multicolumn-card content-container">
+                  <div class="comment-block">
+                    {% case block.type %}
+                      {% when 'testimonial' %}
+                        <div class="testimonial-block">
+                          <div class="user-block">
+                            <div class="user-wrapper">
+                              <div class="testimonial-image">
+                                {% if block.settings.image != blank %}
+                                  <img
+                                    src="{{ block.settings.image.src | image_url }}"
+                                    alt="Icon"
+                                    loading="lazy"
+                                    width="100"
+                                    height="100"
+                                  >
+                                {% else %}
+                                  {% render 'icon-placeholder' %}
+                                {% endif %}
+                              </div>
+
+                              <div class="user-rating-wrapper">
+                                <p class="user">{{ block.settings.name }}</p>
+
+                                {% assign rating = block.settings.rating | floor %}
+                                {% assign has_half_star = block.settings.rating | modulo: 1 %}
+                                {% assign total_stars = rating %}
+
+                                <div class="">
+                                  <div class="star-rating">
+                                    {%- liquid
+                                      for i in (1..rating)
+                                        render 'icon-star-full'
+                                      endfor
+
+                                      if has_half_star > 0
+                                        render 'icon-star-half'
+                                        assign total_stars = total_stars | plus: 1
+                                      endif
+                                    -%}
+                                  </div>
+                                </div>
+                                <p class="verified ">{{ block.settings.verified_buyer }}</p>
+                                <div class="date-wrapper desktop">{{ block.settings.date }}</div>
+                              </div>
+                            </div>
+                            <div class="date-wrapper mobile">{{ block.settings.date }}</div>
+                          </div>
+                        </div>
+                        <div class="comment-block-text">
+                          <p>{{ block.settings.comment }}</p>
+                          <div class="grid-images">
+                            {% for i in (1..8) %}
+                              {% assign image_id = 'image' | append: i %}
+                              {% if block.settings[image_id] != blank %}
+                                <div class="grid-item">
+                                  <img
+                                    src="{{ block.settings[image_id].src | image_url }}"
+                                    alt="Icon"
+                                    loading="lazy"
+                                    width="220"
+                                    height="144"
+                                  >
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
+                        <div class="likes-block">
+                          <div class="likes-wrapper">
+                            <p>Find this helpful?</p>
+                            {% render 'icon-thumb-up' %}
+                            <p>{{ block.settings.thumb_up }}</p>
+                            {% render 'icon-thumb-down' %}
+                            <p>{{ block.settings.thumb_down }}</p>
+                          </div>
+                        </div>
+                    {% endcase %}
+                  </div>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+        <input type="radio" id="tabsilver" name="mytabs">
+        <label for="tabsilver">Questions</label>
+        <div class="tab">
+          <h2>Questions</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
+            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
+            ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+            nulla pariatur.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tabs Ends here -->
+      {%- if show_mobile_slider -%}
+        <div class="slider-buttons no-js-hidden medium-hide">
+          <button
+            type="button"
+            class="slider-button slider-button--prev"
+            name="previous"
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+          <div class="slider-counter caption">
+            <span class="slider-counter--current">1</span>
+            <span aria-hidden="true"> / </span>
+            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+            <span class="slider-counter--total">{{ section.blocks.size }}</span>
+          </div>
+          <button
+            type="button"
+            class="slider-button slider-button--next"
+            name="next"
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+        </div>
+      {%- endif -%}
+    </slider-component>
+    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
+      {%- if section.settings.button_label != blank -%}
+        <a
+          class="button button--primary"
+          {% if section.settings.button_link == blank %}
+            role="link" aria-disabled="true"
+          {% else %}
+            href="{{ section.settings.button_link }}"
+          {% endif %}
+        >
+          {{ section.settings.button_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "settings": [
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.desktop_content_position.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.desktop_content_position.label",
+      "info": "t:sections.rich-text.settings.desktop_content_position.info"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "background-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": true,
+      "label": "t:sections.rich-text.settings.full_width.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Comment Block",
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Name",
+          "default": "Name/Last Name"
+        },
+        {
+          "type": "text",
+          "id": "date",
+          "label": "Date",
+          "default": "01/11/2023"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "rating",
+          "default": 5,
+          "min": 0,
+          "max": 5,
+          "step": 0.5
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "verified_buyer",
+          "label": "Verified Buyer",
+          "default": "Verified Buyer"
+        },
+        {
+          "type": "textarea",
+          "id": "comment",
+          "label": "Comment",
+          "default": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        },
+        {
+          "type": "text",
+          "id": "thumb_up",
+          "label": "Thumb up value",
+          "default": "0"
+        },
+        {
+          "type": "text",
+          "id": "thumb_down",
+          "label": "Thumb down value",
+          "default": "0"
+        },
+        {
+          "type": "image_picker",
+          "id": "image1",
+          "label": "Grid Image 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image2",
+          "label": "Grid Image 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image3",
+          "label": "Grid Image 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image4",
+          "label": "Grid Image 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image5",
+          "label": "Grid Image 5"
+        },
+        {
+          "type": "image_picker",
+          "id": "image6",
+          "label": "Grid Image 6"
+        },
+        {
+          "type": "image_picker",
+          "id": "image7",
+          "label": "Grid Image 7"
+        },
+        {
+          "type": "image_picker",
+          "id": "image8",
+          "label": "Grid Image 8"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "blocks": [
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

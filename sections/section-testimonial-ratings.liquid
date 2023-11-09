@@ -1,0 +1,771 @@
+{{ 'section-multicolumn.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+<style>
+  .testimonial-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    margin: 0;
+    padding: 0;
+  }
+  //.multicolumn-list__item.block-1,
+  .testimonial-grid-2 .multicolumn-list__item.block-2,
+  .testimonial-grid-2 .multicolumn-list__item.block-3 {
+    display: none;
+  }
+  @media (min-width: 1240px) {
+    .testimonial-grid-2 {
+      display: grid;
+      grid-template-columns: auto auto auto 1fr 1fr;
+    }
+    .multicolumn .testimonial-button {
+      padding: 15px 40px;
+    }
+    // .multicolumn-list__item.block-1,
+
+    .testimonial-grid-2 .multicolumn-list__item.block-2,
+    .testimonial-grid-2 .multicolumn-list__item.block-3 {
+      display: grid;
+    }
+  }
+  .testimonial-ratings {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+  .button-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 20px;
+  }
+  .multicolumn-list__item.block-1 {
+    order: 5;
+  }
+  .multicolumn-list__item.block-1 .ratings-text-wrapper svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .testimonial-ratings .ratings-wrapper,
+  .multicolumn-list__item.block-2,
+  .multicolumn-list__item.block-3 {
+    display: none;
+  }
+  .ratings-text-wrapper {
+    display: flex;
+    gap: 7px;
+  }
+  @media (min-width: 750px) {
+    .multicolumn-list__item.block-1 {
+      order: 0;
+    }
+    .multicolumn-list__item.block-1 svg {
+      font-size: 20px;
+    }
+    .multicolumn-list__item.block-2,
+    .multicolumn-list__item.block-3 {
+      display: block;
+    }
+    .ratings-text-wrapper {
+      display: block;
+    }
+    .ratings-text-wrapper .testimonial-ratings-block {
+      display: none;
+    }
+
+    .testimonial-ratings .ratings-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 42px;
+      font-weight: 700;
+    }
+  }
+  .star-rating {
+    white-space: nowrap;
+  }
+  .testimonial-ratings-block .testimonial-star-rating svg {
+    height: 20px;
+    width: 20px;
+  }
+
+  .multicolumn .testimonial-button {
+    padding: 15px 30px;
+
+    color: #fff;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+  .ratings-multicolumn-card {
+    display: flex;
+    align-items: center;
+  }
+  .testimonial-multicolumn-card__info {
+    padding: 2.5rem 1rem;
+  }
+
+  /*  star rating */
+  .testimonial-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-row {
+    display: contents;
+  }
+
+  .testimonial-star-rating {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    height: 28px;
+  }
+
+  .testimonial-star-rating .testimonial-star {
+    color: lightgray;
+  }
+
+  .testimonial-star-rating .testimonial-star.filled {
+    color: #ffb43f;
+  }
+
+  .testimonial-star {
+    font-size: 30px;
+  }
+  /* progress bar  */
+  .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .progress-bar {
+    width: 200px;
+    height: 20px; /* adjust as needed */
+    background-color: gray;
+  }
+
+  .progress {
+    height: 100%;
+    background-color: #ffb43f;
+    color: transparent; /* hides the text */
+  }
+  /* icon */
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+  }
+  .icon-grid > :nth-child(n + 4) {
+    display: none;
+  }
+  .mobile-ratings {
+    display: none;
+  }
+
+  @media (min-width: 750px) {
+    .icon-grid > :nth-child(n + 4) {
+      display: grid;
+    }
+    .icon-grid {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+    .mobile-ratings {
+      display: flex;
+    }
+  }
+</style>
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+-%}
+<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
+  <div
+    class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    {% if settings.animations_reveal_on_scroll %}
+      data-cascade
+    {% endif %}
+  >
+    <div class="{{ section.settings.content_alignment }}">
+      <h2
+        class="section-benefits__heading rich-text__heading rte inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        {{ block.shopify_attributes }}
+        {% if settings.animations_reveal_on_scroll %}
+          data-cascade
+          style="--animation-order: {{ forloop.index }};"
+        {% endif %}
+      >
+        {{ section.settings.heading }}
+      </h2>
+    </div>
+    <slider-component class="slider-mobile-gutter">
+      <ul
+        class=" testimonial-grid-2"
+        id="Slider-{{ section.id }}"
+        role="list"
+      >
+        {%- liquid
+          assign highest_ratio = 0
+          for block in section.blocks
+            if block.settings.image.aspect_ratio > highest_ratio
+              assign highest_ratio = block.settings.image.aspect_ratio
+            endif
+          endfor
+        -%}
+        {%- for block in section.blocks -%}
+          <li
+            id="Slide-{{ section.id }}-{{ forloop.index }}"
+            class="multicolumn-list__item block-{{ forloop.index }}"
+            {{ block.shopify_attributes }}
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+            {% endif %}
+          >
+            <div class="ratings-multicolumn-card content-container">
+              <div class="testimonial-multicolumn-card__info">
+                {% case block.type %}
+                  {% when 'testimonial_ratings' %}
+                    <div class="testimonial-ratings ">
+                      <div class="ratings-wrapper ">
+                        <p class="ratings-text">{{ block.settings.ratings }}</p>
+                        <div class="testimonial-ratings-block">
+                          {% assign whole_rating = block.settings.column_1_rating | floor %}
+                          {% assign has_half_star = block.settings.column_1_rating | modulo: 1 %}
+                          {% assign total_stars = whole_rating %}
+                          <div class="testimonial-star-rating">
+                            {% liquid
+                              for i in (1..whole_rating)
+                                render 'icon-star-full'
+                              endfor
+                            %}
+                            {% if has_half_star > 0 %}
+                              {%- render 'icon-star-half' -%}
+                              {% assign total_stars = total_stars | plus: 1 %}
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="ratings-text-wrapper">
+                        <div class="testimonial-ratings-block">
+                          {% assign whole_rating = block.settings.column_1_rating | floor %}
+                          {% assign has_half_star = block.settings.column_1_rating | modulo: 1 %}
+                          {% assign total_stars = whole_rating %}
+                          <div class="star-rating">
+                            {% liquid
+                              for i in (1..whole_rating)
+                                render 'icon-star-full'
+                              endfor
+                            %}
+                            {% if has_half_star > 0 %}
+                              {%- render 'icon-star-half' -%}
+                              {% assign total_stars = total_stars | plus: 1 %}
+                            {% endif %}
+                          </div>
+                        </div>
+                        <p class="ratings-paragraph ">
+                          {{ block.settings.reviews }}
+                        </p>
+                      </div>
+                    </div>
+                  {% when 'testimonial' %}
+                    <div class="testimonial-row">
+                      {% for i in (1..5) %}
+                        <div class="testimonial-star-rating ">
+                          {% assign star_rating_id = 'star_rating-' | append: i %}
+                          {% assign star_rating = block.settings[star_rating_id] %}
+                          {% for j in (1..5) %}
+                            {% if j <= star_rating %}
+                              <span class="testimonial-star filled">&#9733;</span>
+                            {% else %}
+                              <span class="testimonial-star">&#9733;</span>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% when 'bar' %}
+                    {% for i in (1..5) %}
+                      {% liquid
+                        assign progress_id = 'progress-' | append: i
+                        assign bar_number_id = 'bar_number-' | append: i
+                        assign progress = block.settings[progress_id]
+                        assign bar_number = block.settings[bar_number_id]
+                      %}
+
+                      <div class="progress-container mobile-ratings">
+                        <div class="progress-bar">
+                          <div class="progress" style="width: {{ progress }}%;">
+                            {{ progress }}
+                          </div>
+                        </div>
+                        <div>({{ bar_number }})</div>
+                      </div>
+                    {% endfor %}
+
+                  {% when 'icon' %}
+                    <div class="icon-grid">
+                      {% for i in (1..8) %}
+                        {% assign icon_image_id = 'icon_image-' | append: i %}
+                        {% assign icon_image = block.settings[icon_image_id] %}
+                        <div class="icon-cell">
+                          {% if icon_image != blank %}
+                            <img src="{{ icon_image | image_url }}" alt="Icon" loading="lazy" width="100" height="100">
+                          {% else %}
+                            {% render 'icon-placeholder' %}
+                          {% endif %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% when 'buttons' %}
+                    <div class="button-container">
+                      <a
+                        href="{{ block.settings.button_1_url }}"
+                        class="testimonial-button button"
+                        style="margin-top:0"
+                      >
+                        {{- block.settings.button_1_text -}}
+                      </a>
+                      <a
+                        href="{{ block.settings.button_2_url }}"
+                        class="testimonial-button button"
+                        style="margin-top:0"
+                      >
+                        {{- block.settings.button_2_text -}}
+                      </a>
+                    </div>
+                {% endcase %}
+              </div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if show_mobile_slider -%}
+        <div class="slider-buttons no-js-hidden medium-hide">
+          <button
+            type="button"
+            class="slider-button slider-button--prev"
+            name="previous"
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+          <div class="slider-counter caption">
+            <span class="slider-counter--current">1</span>
+            <span aria-hidden="true"> / </span>
+            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+            <span class="slider-counter--total">{{ section.blocks.size }}</span>
+          </div>
+          <button
+            type="button"
+            class="slider-button slider-button--next"
+            name="next"
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+        </div>
+      {%- endif -%}
+    </slider-component>
+    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
+      {%- if section.settings.button_label != blank -%}
+        <a
+          class="button button--primary"
+          {% if section.settings.button_link == blank %}
+            role="link" aria-disabled="true"
+          {% else %}
+            href="{{ section.settings.button_link }}"
+          {% endif %}
+        >
+          {{ section.settings.button_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Reviews",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "Site Name Reviews",
+      "label": "t:sections.rich-text.blocks.heading.settings.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "text",
+      "id": "caption",
+      "default": "Add a tagline",
+      "label": "t:sections.rich-text.blocks.caption.settings.text.label"
+    },
+    {
+      "type": "select",
+      "id": "text_style",
+      "options": [
+        {
+          "value": "subtitle",
+          "label": "t:sections.rich-text.blocks.caption.settings.text_style.options__1.label"
+        },
+        {
+          "value": "caption-with-letter-spacing",
+          "label": "t:sections.rich-text.blocks.caption.settings.text_style.options__2.label"
+        }
+      ],
+      "default": "caption-with-letter-spacing",
+      "label": "t:sections.rich-text.blocks.caption.settings.text_style.label"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.rich-text.blocks.caption.settings.caption_size.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.rich-text.blocks.caption.settings.caption_size.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.rich-text.blocks.caption.settings.caption_size.options__3.label"
+        }
+      ],
+      "default": "medium",
+      "label": "t:sections.rich-text.blocks.caption.settings.caption_size.label"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial_ratings",
+      "name": "Testimonial Ratings",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "ratings",
+          "label": "Ratings Text",
+          "default": "4.8"
+        },
+        {
+          "type": "range",
+          "id": "column_1_rating",
+          "label": "Column 1 Rating",
+          "min": 0,
+          "max": 5,
+          "step": 0.5,
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "reviews",
+          "label": "Reviews Paragraph",
+          "default": "Reviews"
+        }
+      ]
+    },
+    {
+      "type": "testimonial",
+      "name": "Testimonial Stars",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "range",
+          "id": "star_rating-1",
+          "label": "Star Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        },
+        {
+          "type": "range",
+          "id": "star_rating-2",
+          "label": "Star Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 4
+        },
+        {
+          "type": "range",
+          "id": "star_rating-3",
+          "label": "Star Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 3
+        },
+        {
+          "type": "range",
+          "id": "star_rating-4",
+          "label": "Star Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "range",
+          "id": "star_rating-5",
+          "label": "Star Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Bar",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "range",
+          "id": "progress-1",
+          "label": "Progress",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 100
+        },
+        {
+          "type": "number",
+          "id": "bar_number-1",
+          "label": "Bar Number",
+          "default": 99
+        },
+        {
+          "type": "range",
+          "id": "progress-2",
+          "label": "Progress",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 85
+        },
+        {
+          "type": "number",
+          "id": "bar_number-2",
+          "label": "Bar Number",
+          "default": 30
+        },
+        {
+          "type": "range",
+          "id": "progress-3",
+          "label": "Progress",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 60
+        },
+        {
+          "type": "number",
+          "id": "bar_number-3",
+          "label": "Bar Number",
+          "default": 53
+        },
+        {
+          "type": "range",
+          "id": "progress-4",
+          "label": "Progress",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 40
+        },
+        {
+          "type": "number",
+          "id": "bar_number-4",
+          "label": "Bar Number",
+          "default": 20
+        },
+        {
+          "type": "range",
+          "id": "progress-5",
+          "label": "Progress",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 10
+        },
+        {
+          "type": "number",
+          "id": "bar_number-5",
+          "label": "Bar Number",
+          "default": 4
+        }
+      ]
+    },
+    {
+      "type": "icon",
+      "name": "Icon",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image-1",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-2",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-3",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-4",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-5",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-6",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-7",
+          "label": "Icon Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image-8",
+          "label": "Icon Image"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Buttons",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_1_text",
+          "label": "Button 1 Text",
+          "default": "Write a Review"
+        },
+        {
+          "type": "url",
+          "id": "button_1_url",
+          "label": "Button 1 URL",
+          "default": "/"
+        },
+        {
+          "type": "text",
+          "id": "button_2_text",
+          "label": "Button 2 Text",
+          "default": "Ask a Question"
+        },
+        {
+          "type": "url",
+          "id": "button_2_url",
+          "label": "Button 2 URL",
+          "default": "/"
+        }
+      ]
+    }
+  ],
+
+  "presets": [
+    {
+      "name": "Reviews",
+      "blocks": [
+        {
+          "type": "testimonial_ratings"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "bar"
+        },
+        {
+          "type": "icon"
+        },
+        {
+          "type": "buttons"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
